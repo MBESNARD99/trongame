@@ -36,6 +36,8 @@ tempsPartie=0
 p1point=0
 p2point=0
 
+round=0
+
 def dessineDecor():
     """
     dessine un decor
@@ -43,12 +45,10 @@ def dessineDecor():
     pygame.draw.rect(fenetre, ROUGE, [1, 1, LARGEUR-1, HAUTEUR-70],1)
 
     nbCircle = randint(5,15)
-    print(nbCircle)
     for a in range(nbCircle):
         pygame.draw.circle(fenetre, ROUGE, (randint(0,230),randint(0,400)), randint(10,35))
         pygame.draw.circle(fenetre, ROUGE, (randint(270, 512), randint(0, 400)), randint(10, 35))
     nbRect = randint(5,15)
-    print(nbRect)
     for b in range(nbRect):
         pygame.draw.rect(fenetre, BLEU, [randint(0,230), randint(0,230), randint(10,50), randint(10,50)],0)
         pygame.draw.rect(fenetre, BLEU, [randint(270, 350), randint(270, 350), randint(10, 50), randint(10, 50)], 0)
@@ -60,12 +60,13 @@ def afficheTexte(x,y,txt):
     texteAfficher = font.render(str(txt), True, JAUNE)
     fenetre.blit(texteAfficher,(x,y))
 
+
 def p1collisionMur(p1x,p1y):
     """
     verifie si on touche un mur ou autre chose
     aucun obstacle correspond Ã  une couleur noire
     """
-    global p2point
+    global p2point, round
     p1color=fenetre.get_at((p1x, p1y))[:3]
     p1somme=p1color[0]+p1color[1]+p1color[2]
     if p1somme==0:
@@ -81,7 +82,7 @@ def p2collisionMur(p2x,p2y):
     verifie si on touche un mur ou autre chose
     aucun obstacle correspond Ã  une couleur noire
     """
-    global p1point
+    global p1point, round
     p2color=fenetre.get_at((p2x, p2y))[:3]
     p2somme=p2color[0]+p2color[1]+p2color[2]
     if p2somme==0:
@@ -93,13 +94,12 @@ def p2collisionMur(p2x,p2y):
     return p2collision
 
 
-def deplacementmoto():
+def deplacementmotop1():
     """
     deplace la moto si c'est possible
     """
-    global p1motoX,p1motoY,p2motoX,p2motoY
+    global p1motoX,p1motoY
     p1touche=False
-    p2touche=False
     if p1direction=='haut':
         p1x=p1motoX
         p1y=p1motoY-1
@@ -118,6 +118,18 @@ def deplacementmoto():
         p1touche=p1collisionMur(p1x,p1y)
 
 
+    if p1touche==False:       #si pas d'obstacle alors on trace le point de la moto
+        p1motoX=p1x
+        p1motoY=p1y
+    fenetre.set_at((p1x, p1y), VERT)
+    return p1touche           #retourne la variable booleenne touche pour savoir si la partie est terminÃ©e
+
+def deplacementmotop2():
+    """
+    deplace la moto si c'est possible
+    """
+    global p2motoX,p2motoY
+    p2touche=False
 
     if p2direction=='haut':
         p2x=p2motoX
@@ -136,16 +148,11 @@ def deplacementmoto():
         p2y=p2motoY
         p2touche=p2collisionMur(p2x,p2y)
 
-
-    if p1touche==False:       #si pas d'obstacle alors on trace le point de la moto
-        p1motoX=p1x
-        p1motoY=p1y
     if p2touche==False:
         p2motoX=p2x
         p2motoY=p2y
-    fenetre.set_at((p1x, p1y), VERT)
+
     fenetre.set_at((p2x, p2y), JAUNE)
-    return p1touche           #retourne la variable booleenne touche pour savoir si la partie est terminÃ©e
     return p2touche
 
 loop=True
@@ -182,8 +189,36 @@ while loop==True:
 
     #fenetre.fill((0,0,0))   #efface la fenÃªtre, non utilisÃ© ici
 
-    if deplacementmoto()==True:
-        loop=False
+    if deplacementmotop1()==True:
+        fenetre.fill((0, 0, 0))
+        p1x = 0
+        p1y = 0
+        p2x = 0
+        p2y = 0
+        round+=1
+        dessineDecor()
+        print("Round :",round)
+        #p1direction = 'haut'
+        #p2direction = 'bas'
+        if round==3:
+            loop=False
+            print("Fin de la partie !")
+
+    if deplacementmotop2()==True:
+        fenetre.fill((0, 0, 0))
+        p1x = 0
+        p1y = 0
+        p2x = 0
+        p2y = 0
+        round+=1
+        dessineDecor()
+        print("Round :",round)
+        #p1direction = 'haut'
+        #p2direction = 'bas'
+        if round==3:
+            loop=False
+            print("Fin de la partie !")
+
     frequence.tick(60)
     pygame.display.update() #mets Ã  jour la fenÃªtre graphique
     tempsPartie+=1
@@ -194,8 +229,10 @@ while loop==True:
 
     pygame.display.flip()
 pygame.quit()
-print('perdu')
 print("Joueur 1 :",p1point)
 print("Joueur 2 :",p2point)
-print('temps partie',tempsPartie)
-
+print('Temps des trois rounds',tempsPartie)
+if p1point > p2point:
+    print("Le gagnant est donc le Joueur 1 avec : {}/3 manches gagnées".format(p1point))
+else:
+    print("Le gagnant est donc le Joueur 2 avec : {}/3 manches gagnées".format(p2point))
